@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insider Threat Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+</head>
+<body>
+    <main class="shell">
+        <header class="masthead">
+            <div>
+                <p class="kicker">Security analytics</p>
+                <h1>Insider threat analysis</h1>
+                <p class="intro">Upload activity logs and review the model's anomaly predictions.</p>
+            </div>
+            <div class="model-chip"><span class="pulse"></span> Model ready</div>
+        </header>
+
+        <nav class="section-nav" aria-label="Application sections">
+            <button class="section-tab is-active" data-view="analysis-view" type="button">Logs analysis</button>
+            <button class="section-tab" data-view="monitor-view" type="button">Logs monitor <span>Backend pending</span></button>
+            <button class="section-tab" data-view="dashboard-view" type="button">Dashboard <span>Backend pending</span></button>
+        </nav>
+
+        <div class="view is-active" id="analysis-view">
+        <section class="upload-panel" aria-labelledby="upload-title">
+            <div class="upload-copy">
+                <p class="eyebrow">Start an analysis</p>
+                <h2 id="upload-title">Drop a CSV to inspect</h2>
+                <p>Use the same log format as your trained model. Results stay in this session.</p>
+            </div>
+            <form id="upload-form">
+                <label class="drop-zone" id="drop-zone" for="file-input">
+                    <span class="upload-icon">↑</span>
+                    <span class="drop-title">Choose a CSV file</span>
+                    <span class="drop-hint">or drag and drop it here</span>
+                    <span class="file-name" id="file-name">No file selected</span>
+                    <input id="file-input" name="file" type="file" accept=".csv,text/csv" required>
+                </label>
+                <button class="analyze-button" id="analyze-button" type="submit">Analyze file <span>→</span></button>
+            </form>
+            <p class="message" id="message" role="alert"></p>
+        </section>
+
+        <section class="results" id="results" hidden>
+            <div class="results-heading">
+                <div>
+                    <p class="eyebrow">Analysis complete</p>
+                    <h2 id="result-file">Results</h2>
+                </div>
+                <button class="reset-button" id="reset-button" type="button">New analysis</button>
+            </div>
+            <div class="stats">
+                <div class="stat"><span>Total records</span><strong id="total-count">0</strong></div>
+                <div class="stat stat-alert"><span>Anomalies</span><strong id="anomaly-count">0</strong></div>
+                <div class="stat stat-clear"><span>Normal</span><strong id="normal-count">0</strong></div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead id="results-head"></thead>
+                    <tbody id="results-body"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="pagination" hidden>
+                <button class="page-button" id="previous-page" type="button">← Previous</button>
+                <span id="page-indicator">Page 1 of 1</span>
+                <button class="page-button" id="next-page" type="button">Next →</button>
+            </div>
+        </section>
+        </div>
+
+        <section class="placeholder-view" id="monitor-view" hidden>
+            <p class="eyebrow">Logs monitor</p>
+            <h2>Live activity monitoring is ready for its data source.</h2>
+            <p>This section will display incoming logs, processing status, and recent detection events when the monitoring backend is available.</p>
+            <div class="monitor-actions">
+                <button class="monitor-button" id="start-monitoring" type="button">Start logging <span>→</span></button>
+                <button class="monitor-button monitor-button-secondary" id="refresh-logs" type="button">Refresh logs</button>
+            </div>
+            <p class="monitor-status" id="monitor-status" role="status"></p>
+            <div class="logs-table-wrap">
+                <table>
+                    <thead><tr><th>Time</th><th>Event</th><th>Details</th></tr></thead>
+                    <tbody id="logs-body"><tr><td colspan="3">No logs loaded.</td></tr></tbody>
+                </table>
+            </div>
+            <div class="placeholder-mark">01 <span>/</span> monitor</div>
+        </section>
+
+        <section class="placeholder-view" id="dashboard-view" hidden>
+            <p class="eyebrow">Dashboard</p>
+            <h2>Security signals will collect here.</h2>
+            <p>This section will provide trends, user risk summaries, and anomaly metrics when the dashboard backend is available.</p>
+            <div class="placeholder-mark">02 <span>/</span> dashboard</div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', path='app.js') }}"></script>
+</body>
+</html>
