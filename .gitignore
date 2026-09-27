@@ -1,7 +1,0 @@
-*.csv
-*.txt
-__pycache__/
-logs/
-*.md
-*.zip
-temp.py
