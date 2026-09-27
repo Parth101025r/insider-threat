@@ -122,6 +122,11 @@ class NewFileHandler(FileSystemEventHandler):
             logger.info("NEW_FILE | path=%s | via=rename-from-temp", event.dest_path)
         else:
             logger.info("FILE_MOVED | from=%s | to=%s", event.src_path, event.dest_path)
+    
+    def on_deleted(self,event):
+        if event.is_directory or self._ignored(event.src_path):
+            return
+        logger.info("FILE_DELETED | path=%s", event.src_path)
 
 
 def start_file_watcher() -> Observer:
@@ -336,7 +341,7 @@ def parse_log_file(file_path):
                 "details": details
             })
 
-    return records[-200:]
+    return records
 # ----------------------------------------------------------------------------
 # MAIN
 # ----------------------------------------------------------------------------

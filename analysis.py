@@ -33,6 +33,30 @@ FEATURE_COLUMNS = [
 ANN_MODEL = keras.models.load_model("D:\\Projects\\Insider Threat\\models\\ann_model.keras")
 RF_MODEL = joblib.load("D:\\Projects\\Insider Threat\\models\\rf_model.joblib")
 
+def log_to_csv(log_file, delimiter=None):
+    with open(log_file, "r", encoding="utf-8") as f:
+        lines = [line.strip() for line in f if line.strip()]
+
+    rows = []
+
+    for line in lines:
+        if delimiter:
+            rows.append(line.split(delimiter))
+        else:
+            rows.append(line.split())
+
+    max_columns = max(len(row) for row in rows)
+
+    # Make all rows equal length
+    rows = [
+        row + [""] * (max_columns - len(row))
+        for row in rows
+    ]
+
+    columns = [f"column_{i+1}" for i in range(max_columns)]
+
+    return pd.DataFrame(rows, columns=columns)
+
 
 def preprocess(df):
     df = df.copy()

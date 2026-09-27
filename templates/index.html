@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Insider Threat Analysis</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+    <script>
+        try {
+            document.documentElement.dataset.theme = localStorage.getItem('insider-threat-theme') === 'dark' ? 'dark' : 'light';
+        } catch {
+            document.documentElement.dataset.theme = 'light';
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}?v=dashboard-dark-2">
 </head>
 <body>
     <main class="shell">
@@ -14,13 +21,20 @@
                 <h1>Insider threat analysis</h1>
                 <p class="intro">Upload activity logs and review the model's anomaly predictions.</p>
             </div>
-            <div class="model-chip"><span class="pulse"></span> Model ready</div>
+            <div class="header-tools">
+                <label class="theme-toggle" for="theme-toggle">
+                    <span>Dark mode</span>
+                    <input id="theme-toggle" type="checkbox" role="switch" aria-label="Dark mode">
+                    <span class="toggle-track" aria-hidden="true"><span></span></span>
+                </label>
+                <div class="model-chip"><span class="pulse"></span> Model ready</div>
+            </div>
         </header>
 
         <nav class="section-nav" aria-label="Application sections">
             <button class="section-tab is-active" data-view="analysis-view" type="button">Logs analysis</button>
-            <button class="section-tab" data-view="monitor-view" type="button">Logs monitor <span>Backend pending</span></button>
-            <button class="section-tab" data-view="dashboard-view" type="button">Dashboard <span>Backend pending</span></button>
+            <button class="section-tab" data-view="monitor-view" type="button">Logs monitor</button>
+            <button class="section-tab" data-view="dashboard-view" type="button">Dashboard</button>
         </nav>
 
         <div class="view is-active" id="analysis-view">
@@ -72,29 +86,94 @@
 
         <section class="placeholder-view" id="monitor-view" hidden>
             <p class="eyebrow">Logs monitor</p>
-            <h2>Live activity monitoring is ready for its data source.</h2>
-            <p>This section will display incoming logs, processing status, and recent detection events when the monitoring backend is available.</p>
+            <h2>Live file activity</h2>
+            <p>Review the newest events collected by the monitor.</p>
             <div class="monitor-actions">
                 <button class="monitor-button" id="start-monitoring" type="button">Start logging <span>→</span></button>
+                <button class="monitor-button monitor-button-secondary" id="stop-monitoring" type="button" hidden>Stop logging</button>
                 <button class="monitor-button monitor-button-secondary" id="refresh-logs" type="button">Refresh logs</button>
             </div>
             <p class="monitor-status" id="monitor-status" role="status"></p>
+            <div class="logs-controls">
+                <label for="monitor-page-size">Rows per page
+                    <select id="monitor-page-size">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </label>
+                <span id="monitor-row-range" aria-live="polite">Showing 0 to 0 of 0</span>
+            </div>
             <div class="logs-table-wrap">
                 <table>
                     <thead><tr><th>Time</th><th>Event</th><th>Details</th></tr></thead>
                     <tbody id="logs-body"><tr><td colspan="3">No logs loaded.</td></tr></tbody>
                 </table>
             </div>
-            <div class="placeholder-mark">01 <span>/</span> monitor</div>
+            <nav class="logs-pagination" id="monitor-pagination" aria-label="Monitor log pages" hidden>
+                <button class="page-button" id="monitor-previous-page" type="button">← Previous</button>
+                <span id="monitor-page-indicator">Page 1 of 1</span>
+                <button class="page-button" id="monitor-next-page" type="button">Next →</button>
+            </nav>
         </section>
 
-        <section class="placeholder-view" id="dashboard-view" hidden>
-            <p class="eyebrow">Dashboard</p>
-            <h2>Security signals will collect here.</h2>
-            <p>This section will provide trends, user risk summaries, and anomaly metrics when the dashboard backend is available.</p>
-            <div class="placeholder-mark">02 <span>/</span> dashboard</div>
+        <section class="view dashboard-view" id="dashboard-view" hidden aria-labelledby="dashboard-title">
+            <div class="dashboard-heading">
+                <div>
+                    <p class="eyebrow">Dashboard</p>
+                    <h2 id="dashboard-title">Activity overview</h2>
+                    <p class="dashboard-description">Collected events from the active monitor log.</p>
+                </div>
+                <button class="monitor-button dashboard-refresh" id="refresh-dashboard" type="button" title="Refresh activity data">
+                    <span aria-hidden="true">↻</span> Refresh
+                </button>
+            </div>
+
+            <div class="dashboard-filters" aria-label="Filter dashboard by date">
+                <label>From <input id="dashboard-date-from" type="date"></label>
+                <label>To <input id="dashboard-date-to" type="date"></label>
+                <button class="page-button" id="clear-dashboard-dates" type="button">Clear dates</button>
+            </div>
+            <p class="dashboard-status" id="dashboard-status" role="status" aria-live="polite">Open the dashboard to load activity.</p>
+
+            <div class="stats dashboard-stats">
+                <div class="stat"><span>Events in range</span><strong id="dashboard-total">0</strong></div>
+                <div class="stat stat-alert"><span>Event types</span><strong id="dashboard-types">0</strong></div>
+                <div class="stat stat-clear"><span>Latest activity</span><strong class="stat-time" id="dashboard-latest">—</strong></div>
+            </div>
+
+            <div class="dashboard-grid">
+                <section class="dashboard-panel" aria-labelledby="event-types-title">
+                    <div class="dashboard-panel-heading">
+                        <h3 id="event-types-title">Events by type</h3>
+                        <span>In selected range</span>
+                    </div>
+                    <div id="dashboard-event-types" class="event-type-list"></div>
+                </section>
+                <section class="dashboard-panel" aria-labelledby="activity-trend-title">
+                    <div class="dashboard-panel-heading">
+                        <h3 id="activity-trend-title">Daily activity</h3>
+                        <span>Most recent 14 days with events</span>
+                    </div>
+                    <div id="dashboard-trend" class="activity-trend"></div>
+                </section>
+            </div>
+
+            <section class="dashboard-panel recent-panel" aria-labelledby="recent-events-title">
+                <div class="dashboard-panel-heading">
+                    <h3 id="recent-events-title">Recent events</h3>
+                    <span>Latest 8</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Time</th><th>Event</th><th>Details</th></tr></thead>
+                        <tbody id="dashboard-recent-events"><tr><td colspan="3">No activity loaded.</td></tr></tbody>
+                    </table>
+                </div>
+            </section>
         </section>
     </main>
-    <script src="{{ url_for('static', path='app.js') }}"></script>
+    <script src="{{ url_for('static', path='app.js') }}?v=monitor-stop-1"></script>
 </body>
 </html>
