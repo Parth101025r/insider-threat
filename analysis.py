@@ -1,6 +1,6 @@
 import keras
 import joblib
-import pandas as pd
+import csv
 import pandas as pd
 import numpy as np
 import datetime
@@ -33,29 +33,17 @@ FEATURE_COLUMNS = [
 ANN_MODEL = keras.models.load_model("D:\\Projects\\Insider Threat\\models\\ann_model.keras")
 RF_MODEL = joblib.load("D:\\Projects\\Insider Threat\\models\\rf_model.joblib")
 
-def log_to_csv(log_file, delimiter=None):
-    with open(log_file, "r", encoding="utf-8") as f:
-        lines = [line.strip() for line in f if line.strip()]
+def log_to_csv(log_file, csv_file):
+    with open(log_file, "r", encoding="utf-8") as infile:
+        lines = [line.strip() for line in infile if line.strip()]
 
-    rows = []
+    with open(csv_file, "w", newline="", encoding="utf-8") as outfile:
+        writer = csv.writer(outfile)
 
-    for line in lines:
-        if delimiter:
-            rows.append(line.split(delimiter))
-        else:
-            rows.append(line.split())
+        for line in lines:
+            writer.writerow([line])
 
-    max_columns = max(len(row) for row in rows)
-
-    # Make all rows equal length
-    rows = [
-        row + [""] * (max_columns - len(row))
-        for row in rows
-    ]
-
-    columns = [f"column_{i+1}" for i in range(max_columns)]
-
-    return pd.DataFrame(rows, columns=columns)
+    print(f"CSV file created: {csv_file}")
 
 
 def preprocess(df):
@@ -364,6 +352,5 @@ def getPredictions(file):
     predsProbabs = 0.55*rfPreds + 0.45*annPreds
     preds = (predsProbabs > 0.5).astype(int)
     return preds
-
 
 

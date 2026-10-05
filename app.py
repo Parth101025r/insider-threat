@@ -1,5 +1,7 @@
 import json
 import math
+import tempfile
+from pathlib import Path
 
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException
 from fastapi.templating import Jinja2Templates
@@ -41,15 +43,37 @@ def home(request: Request):
 
 @app.post("/api/analysis/logs")
 async def logsAnalysis(file: UploadFile = File(...)):
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Please upload a CSV or LOG file.")
 
-    if not file.filename or not file.filename.lower().endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Please upload a CSV file.")
+    file_extension = Path(file.filename).suffix.lower()
+    if file_extension not in {".csv", ".log"}:
+        raise HTTPException(status_code=400, detail="Please upload a CSV or LOG file.")
 
     try:
-    
-        data = pd.read_csv(file.file)
+        if file_extension == ".log":
+            with tempfile.TemporaryDirectory() as temp_dir:
+                log_path = Path(temp_dir) / "upload.log"
+                csv_path = Path(temp_dir) / "converted.csv"
+                log_path.write_bytes(await file.read())
+                log_to_csv(log_path, csv_path)
+
+                if csv_path.stat().st_size == 0:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="The uploaded log is empty.",
+                    )
+
+                data = pd.read_csv(
+                    csv_path,
+                    header=None,
+                    names=["log_line"],
+                )
+        else:
+            data = pd.read_csv(file.file)
+
         if data.empty:
-            raise HTTPException(status_code=400, detail="The uploaded CSV is empty.")
+            raise HTTPException(status_code=400, detail="The uploaded file is empty.")
 
         predictions = getPredictions(data)
         result = data.copy()

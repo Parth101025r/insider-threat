@@ -41,16 +41,16 @@
         <section class="upload-panel" aria-labelledby="upload-title">
             <div class="upload-copy">
                 <p class="eyebrow">Start an analysis</p>
-                <h2 id="upload-title">Drop a CSV to inspect</h2>
-                <p>Use the same log format as your trained model. Results stay in this session.</p>
+                <h2 id="upload-title">Drop a CSV or log to inspect</h2>
+                <p>Log files are converted to CSV before analysis. Results stay in this session.</p>
             </div>
             <form id="upload-form">
                 <label class="drop-zone" id="drop-zone" for="file-input">
                     <span class="upload-icon">↑</span>
-                    <span class="drop-title">Choose a CSV file</span>
+                    <span class="drop-title">Choose a CSV or log file</span>
                     <span class="drop-hint">or drag and drop it here</span>
                     <span class="file-name" id="file-name">No file selected</span>
-                    <input id="file-input" name="file" type="file" accept=".csv,text/csv" required>
+                    <input id="file-input" name="file" type="file" accept=".csv,.log,text/csv,text/plain" required>
                 </label>
                 <button class="analyze-button" id="analyze-button" type="submit">Analyze file <span>→</span></button>
             </form>
